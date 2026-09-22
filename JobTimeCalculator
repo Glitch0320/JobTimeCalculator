@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZBM Job Time Calculator</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        zbm: {
+                            yellow: '#EAB308',
+                            gold: '#FACC15',
+                            darkGold: '#CA8A04',
+                            bg: '#121417',
+                            card: '#1A1D24',
+                            input: '#232731',
+                            border: '#333A48'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d0f12;
+            color: #f3f4f6;
+            background-image: radial-gradient(circle at 50% 0%, #1e232d 0%, #0d0f12 75%);
+        }
+        .heading-font {
+            font-family: 'Chakra Petch', sans-serif;
+        }
+        /* Fix input styling & overflows across browser engines */
+        input[type="datetime-local"] {
+            color-scheme: dark;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            filter: invert(0.8) sepia(100%) saturate(500%) hue-rotate(5deg);
+            padding: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-12">
+
+    <!-- TOP HEADER / BRANDING BANNER -->
+    <header class="w-full bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-900 border-b-2 border-zbm-yellow/80 shadow-2xl py-6 px-4">
+        <div class="max-w-4xl mx-auto flex flex-col items-center justify-center text-center">
+            <!-- Simplified Centered ZBM Text Header -->
+            <div class="inline-block">
+                <h1 class="heading-font text-5xl md:text-6xl font-black tracking-wider text-zbm-yellow leading-none drop-shadow-[0_2px_10px_rgba(234,179,8,0.3)]">
+                    ZBM
+                </h1>
+                <div class="h-1.5 bg-zbm-yellow w-full mt-1 shadow-md"></div>
+            </div>
+            <p class="text-xs uppercase tracking-[0.25em] font-semibold text-neutral-400 mt-2">
+                Zierke Built Manufacturing Inc.
+            </p>
+        </div>
+    </header>
+
+    <!-- MAIN APP CONTAINER -->
+    <main class="max-w-3xl mx-auto px-4 mt-8">
+
+        <!-- TITLE CARD -->
+        <div class="text-center mb-8">
+            <h2 class="heading-font text-3xl sm:text-4xl font-bold uppercase tracking-wide text-white drop-shadow">
+                Job Time Calculator
+            </h2>
+        </div>
+
+        <!-- MAIN CALCULATOR FORM CARD -->
+        <div class="bg-zbm-card border border-zbm-border rounded-xl shadow-2xl overflow-hidden mb-8">
+            <div class="p-5 sm:p-7 space-y-6">
+
+                <!-- 1. START TIME INPUT (Fixed overflow layout) -->
+                <div>
+                    <label class="block heading-font text-zbm-yellow text-sm font-bold tracking-wider uppercase mb-2 flex items-center gap-2">
+                        <i class="ph-bold ph-calendar-plus text-lg"></i>
+                        Job Start Date & Time
+                    </label>
+                    <div class="w-full overflow-hidden rounded-lg border border-zbm-border bg-zbm-input focus-within:border-zbm-yellow transition-colors">
+                        <input type="datetime-local" id="startTimeInput" class="w-full bg-transparent px-4 py-3.5 text-white font-medium text-lg sm:text-xl outline-none focus:ring-0">
+                    </div>
+                    <div class="text-xs text-neutral-400 mt-1.5 flex items-center justify-between px-1">
+                        <span>Standard Mon–Thu: 6:10 AM – 4:20 PM</span>
+                        <button type="button" id="btnNow" class="text-zbm-yellow hover:underline text-xs font-semibold">Set to Now</button>
+                    </div>
+                </div>
+
+                <!-- 2. FRIDAY SCHEDULE OPTION -->
+                <div>
+                    <label class="block heading-font text-zbm-yellow text-sm font-bold tracking-wider uppercase mb-2 flex items-center gap-2">
+                        <i class="ph-bold ph-clock text-lg"></i>
+                        Friday Shift Schedule
+                    </label>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                        <label class="relative flex items-center justify-center p-3 rounded-lg border border-zbm-border bg-zbm-input cursor-pointer hover:border-zbm-yellow transition-all">
+                            <input type="radio" name="fridaySchedule" value="3pm" checked class="sr-only peer">
+                            <div class="w-full text-center peer-checked:text-zbm-yellow">
+                                <div class="font-bold text-sm">Finish @ 3:00 PM</div>
+                                <div class="text-[11px] text-neutral-400">Standard Friday</div>
+                            </div>
+                            <div class="absolute inset-0 border-2 border-zbm-yellow rounded-lg pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                        </label>
+
+                        <label class="relative flex items-center justify-center p-3 rounded-lg border border-zbm-border bg-zbm-input cursor-pointer hover:border-zbm-yellow transition-all">
+                            <input type="radio" name="fridaySchedule" value="12pm" class="sr-only peer">
+                            <div class="w-full text-center peer-checked:text-zbm-yellow">
+                                <div class="font-bold text-sm">Finish @ 12:00 PM</div>
+                                <div class="text-[11px] text-neutral-400">Half Day (Noon)</div>
+                            </div>
+                            <div class="absolute inset-0 border-2 border-zbm-yellow rounded-lg pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                        </label>
+
+                        <label class="relative flex items-center justify-center p-3 rounded-lg border border-zbm-border bg-zbm-input cursor-pointer hover:border-zbm-yellow transition-all">
+                            <input type="radio" name="fridaySchedule" value="off" class="sr-only peer">
+                            <div class="w-full text-center peer-checked:text-zbm-yellow">
+                                <div class="font-bold text-sm">Not Worked</div>
+                                <div class="text-[11px] text-neutral-400">Day Off / Skipped</div>
+                            </div>
+                            <div class="absolute inset-0 border-2 border-zbm-yellow rounded-lg pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 3. JOB DURATION INPUT -->
+                <div>
+                    <label class="block heading-font text-zbm-yellow text-sm font-bold tracking-wider uppercase mb-2 flex items-center gap-2">
+                        <i class="ph-bold ph-timer text-lg"></i>
+                        Target Job Duration (100% Standard Base)
+                    </label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="relative rounded-lg border border-zbm-border bg-zbm-input focus-within:border-zbm-yellow transition-colors flex items-center px-3">
+                            <input type="number" id="durationHours" min="0" value="10" class="w-full bg-transparent py-3 text-white font-bold text-2xl outline-none">
+                            <span class="text-xs font-bold text-neutral-400 uppercase tracking-wider ml-1">HRS</span>
+                        </div>
+                        <div class="relative rounded-lg border border-zbm-border bg-zbm-input focus-within:border-zbm-yellow transition-colors flex items-center px-3">
+                            <input type="number" id="durationMins" min="0" max="59" value="0" class="w-full bg-transparent py-3 text-white font-bold text-2xl outline-none">
+                            <span class="text-xs font-bold text-neutral-400 uppercase tracking-wider ml-1">MINS</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- TARGET COMPLETION RESULTS (120%, 100%, 80%) -->
+        <div class="space-y-4 mb-8">
+            <h3 class="heading-font text-xl font-bold uppercase text-white flex items-center gap-2">
+                <i class="ph-bold ph-flag-checkered text-zbm-yellow"></i>
+                Calculated Completion Times
+            </h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                
+                <!-- 120% EFFICIENCY (20% FASTER -> 80% TIME) -->
+                <div class="bg-zbm-card border-2 border-emerald-500/50 rounded-xl p-4 relative overflow-hidden shadow-lg flex flex-col justify-between">
+                    <div class="absolute top-0 right-0 bg-emerald-500 text-neutral-950 font-black text-[10px] uppercase px-2.5 py-0.5 rounded-bl font-mono">
+                        High Speed
+                    </div>
+                    <div>
+                        <div class="flex items-baseline gap-1.5 mb-1">
+                            <span class="heading-font text-2xl font-black text-emerald-400">120%</span>
+                            <span class="text-xs font-semibold uppercase text-neutral-300">Pace</span>
+                        </div>
+                        <div class="text-xs text-neutral-400 mb-3" id="activeWork120">
+                            Active Work: 8h 0m
+                        </div>
+                    </div>
+                    <div class="border-t border-neutral-700/60 pt-2.5">
+                        <div class="text-xs uppercase tracking-wider text-neutral-400 font-medium">Goal End Time</div>
+                        <div class="text-xl font-bold text-white leading-tight mt-0.5" id="endTime120">--:--</div>
+                        <div class="text-xs text-emerald-300 font-medium mt-0.5" id="endDate120">---</div>
+                    </div>
+                </div>
+
+                <!-- 100% STANDARD TARGET -->
+                <div class="bg-zbm-card border-2 border-zbm-yellow rounded-xl p-4 relative overflow-hidden shadow-xl flex flex-col justify-between ring-2 ring-zbm-yellow/20">
+                    <div class="absolute top-0 right-0 bg-zbm-yellow text-neutral-950 font-black text-[10px] uppercase px-2.5 py-0.5 rounded-bl font-mono">
+                        Target Standard
+                    </div>
+                    <div>
+                        <div class="flex items-baseline gap-1.5 mb-1">
+                            <span class="heading-font text-2xl font-black text-zbm-yellow">100%</span>
+                            <span class="text-xs font-semibold uppercase text-neutral-300">Pace</span>
+                        </div>
+                        <div class="text-xs text-neutral-400 mb-3" id="activeWork100">
+                            Active Work: 10h 0m
+                        </div>
+                    </div>
+                    <div class="border-t border-neutral-700/60 pt-2.5">
+                        <div class="text-xs uppercase tracking-wider text-neutral-400 font-medium">Goal End Time</div>
+                        <div class="text-2xl font-black text-white leading-tight mt-0.5" id="endTime100">--:--</div>
+                        <div class="text-xs text-zbm-yellow font-semibold mt-0.5" id="endDate100">---</div>
+                    </div>
+                </div>
+
+                <!-- 80% EFFICIENCY (20% SLOWER -> 120% TIME) -->
+                <div class="bg-zbm-card border-2 border-amber-500/50 rounded-xl p-4 relative overflow-hidden shadow-lg flex flex-col justify-between">
+                    <div class="absolute top-0 right-0 bg-amber-500 text-neutral-950 font-black text-[10px] uppercase px-2.5 py-0.5 rounded-bl font-mono">
+                        Extended
+                    </div>
+                    <div>
+                        <div class="flex items-baseline gap-1.5 mb-1">
+                            <span class="heading-font text-2xl font-black text-amber-400">80%</span>
+                            <span class="text-xs font-semibold uppercase text-neutral-300">Pace</span>
+                        </div>
+                        <div class="text-xs text-neutral-400 mb-3" id="activeWork80">
+                            Active Work: 12h 0m
+                        </div>
+                    </div>
+                    <div class="border-t border-neutral-700/60 pt-2.5">
+                        <div class="text-xs uppercase tracking-wider text-neutral-400 font-medium">Goal End Time</div>
+                        <div class="text-xl font-bold text-white leading-tight mt-0.5" id="endTime80">--:--</div>
+                        <div class="text-xs text-amber-300 font-medium mt-0.5" id="endDate80">---</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- BREAKDOWN TIMELINE (FOR 100% TARGET) -->
+        <div class="bg-zbm-card border border-zbm-border rounded-xl p-5 sm:p-6 shadow-xl">
+            <h3 class="heading-font text-lg font-bold uppercase text-white mb-4 flex items-center justify-between border-b border-zbm-border pb-3">
+                <span class="flex items-center gap-2">
+                    <i class="ph-bold ph-list-numbers text-zbm-yellow"></i>
+                    Schedule Timeline Breakdown (100% Target)
+                </span>
+                <span class="text-xs font-normal text-neutral-400 normal-case" id="timelineTotalDuration">--</span>
+            </h3>
+
+            <div id="timelineContainer" class="space-y-3 relative before:absolute before:inset-0 before:left-3 before:w-0.5 before:bg-zbm-border">
+                <!-- Dynamic Timeline Entries Inserted Here -->
+            </div>
+        </div>
+
+    </main>
+
+    <!-- CALCULATION SCRIPT -->
+    <script>
+        // DOM Elements
+        const startTimeInput = document.getElementById('startTimeInput');
+        const durationHoursInput = document.getElementById('durationHours');
+        const durationMinsInput = document.getElementById('durationMins');
+        const fridayRadioButtons = document.getElementsByName('fridaySchedule');
+        const btnNow = document.getElementById('btnNow');
+
+        // Set default start time to today at 14:00 (or current local time if preferred)
+        function initDefaults() {
+            const now = new Date();
+            // Format for datetime-local input YYYY-MM-DDTHH:mm
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            
+            startTimeInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+
+        btnNow.addEventListener('click', () => {
+            initDefaults();
+            calculateGoalTime();
+        });
+
+        function getFridayMode() {
+            for (const radio of fridayRadioButtons) {
+                if (radio.checked) return radio.value;
+            }
+            return '3pm';
+        }
+
+        // Check if date is a working minute and return shift details
+        function getShiftForDate(date, fridayMode) {
+            const day = date.getDay(); // 0 = Sun, 1 = Mon, ..., 5 = Fri, 6 = Sat
+            
+            // Weekends
+            if (day === 0 || day === 6) return null;
+
+            // Monday - Thursday
+            if (day >= 1 && day <= 4) {
+                return {
+                    startMin: 6 * 60 + 10,  // 06:10 (370 mins)
+                    endMin: 16 * 60 + 20,   // 16:20 (980 mins)
+                    breaks: [
+                        { start: 9 * 60, end: 9 * 60 + 15, name: 'Morning Break' },       // 09:00 - 09:15
+                        { start: 12 * 60, end: 12 * 60 + 30, name: 'Lunch Break' },       // 12:00 - 12:30
+                        { start: 15 * 60, end: 15 * 60 + 15, name: 'Afternoon Break' }    // 15:00 - 15:15
+                    ]
+                };
+            }
+
+            // Friday
+            if (day === 5) {
+                if (fridayMode === 'off') return null;
+
+                let endMin = 15 * 60; // Default 3:00 PM (900 mins)
+                if (fridayMode === '12pm') endMin = 12 * 60; // 12:00 PM (720 mins)
+
+                const breaks = [];
+                // Morning break always occurs if shift goes past 9:15 AM
+                if (endMin > 9 * 60 + 15) {
+                    breaks.push({ start: 9 * 60, end: 9 * 60 + 15, name: 'Morning Break' });
+                }
+                // Lunch break occurs if shift goes past 12:30 PM
+                if (endMin > 12 * 60 + 30) {
+                    breaks.push({ start: 12 * 60, end: 12 * 60 + 30, name: 'Lunch Break' });
+                }
+
+                return {
+                    startMin: 6 * 60 + 10,
+                    endMin: endMin,
+                    breaks: breaks
+                };
+            }
+
+            return null;
+        }
+
+        // Core Minute-by-Minute Calculation Engine
+        function computeEndTime(startDateTime, totalMinutesRequired, fridayMode) {
+            let current = new Date(startDateTime.getTime());
+            let remainingMins = totalMinutesRequired;
+            const timelineEvents = [];
+
+            let activeBlockMinutes = 0;
+            let currentBlockStart = new Date(current.getTime());
+
+            // Limit simulation iterations to prevent infinite loops (e.g. max 60 working days)
+            let maxSafetyGuard = 60 * 24 * 60; 
+
+            while (remainingMins > 0 && maxSafetyGuard > 0) {
+                maxSafetyGuard--;
+
+                const shift = getShiftForDate(current, fridayMode);
+                const timeInMins = current.getHours() * 60 + current.getMinutes();
+
+                if (!shift || timeInMins >= shift.endMin) {
+                    // Non-working day or past shift end -> fast forward to next day 06:10 AM
+                    if (activeBlockMinutes > 0) {
+                        timelineEvents.push({
+                            type: 'work',
+                            start: new Date(currentBlockStart.getTime()),
+                            end: new Date(current.getTime()),
+                            duration: activeBlockMinutes
+                        });
+                        activeBlockMinutes = 0;
+                    }
+
+                    timelineEvents.push({
+                        type: 'offhours',
+                        start: new Date(current.getTime()),
+                        label: timeInMins >= (shift?.endMin || 0) ? 'Shift End / Overnight Pause' : 'Non-Working Day'
+                    });
+
+                    // Advance to next day at 06:10 AM
+                    current.setDate(current.getDate() + 1);
+                    current.setHours(6, 10, 0, 0);
+                    currentBlockStart = new Date(current.getTime());
+                    continue;
+                }
+
+                if (timeInMins < shift.startMin) {
+                    // Before shift start -> skip forward to shift start
+                    current.setHours(6, 10, 0, 0);
+                    currentBlockStart = new Date(current.getTime());
+                    continue;
+                }
+
+                // Check if currently inside a break
+                const currentBreak = shift.breaks.find(b => timeInMins >= b.start && timeInMins < b.end);
+
+                if (currentBreak) {
+                    if (activeBlockMinutes > 0) {
+                        timelineEvents.push({
+                            type: 'work',
+                            start: new Date(currentBlockStart.getTime()),
+                            end: new Date(current.getTime()),
+                            duration: activeBlockMinutes
+                        });
+                        activeBlockMinutes = 0;
+                    }
+
+                    // Jump to end of break
+                    const breakEndHour = Math.floor(currentBreak.end / 60);
+                    const breakEndMin = currentBreak.end % 60;
+                    const breakStart = new Date(current.getTime());
+                    current.setHours(breakEndHour, breakEndMin, 0, 0);
+
+                    timelineEvents.push({
+                        type: 'break',
+                        name: currentBreak.name,
+                        start: breakStart,
+                        end: new Date(current.getTime()),
+                        duration: currentBreak.end - currentBreak.start
+                    });
+
+                    currentBlockStart = new Date(current.getTime());
+                    continue;
+                }
+
+                // Normal active working minute
+                remainingMins--;
+                activeBlockMinutes++;
+                current.setMinutes(current.getMinutes() + 1);
+            }
+
+            if (activeBlockMinutes > 0) {
+                timelineEvents.push({
+                    type: 'work',
+                    start: new Date(currentBlockStart.getTime()),
+                    end: new Date(current.getTime()),
+                    duration: activeBlockMinutes
+                });
+            }
+
+            return {
+                endTime: current,
+                timeline: timelineEvents
+            };
+        }
+
+        function formatDateTime(date) {
+            const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+            const dateStr = date.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+            return { timeStr, dateStr };
+        }
+
+        function formatMinutes(mins) {
+            const h = Math.floor(mins / 60);
+            const m = Math.round(mins % 60);
+            return `${h}h ${m}m`;
+        }
+
+        function calculateGoalTime() {
+            if (!startTimeInput.value) return;
+
+            const startDateTime = new Date(startTimeInput.value);
+            const hours = parseFloat(durationHoursInput.value) || 0;
+            const mins = parseFloat(durationMinsInput.value) || 0;
+            const fridayMode = getFridayMode();
+
+            const baseTotalMinutes = Math.round(hours * 60 + mins);
+
+            if (baseTotalMinutes <= 0) {
+                return;
+            }
+
+            // Exact calculation definitions:
+            // 120% Efficiency = Job finishes 20% faster -> takes 80% of target time (0.80 * Base)
+            // 100% Target = Standard time (1.00 * Base)
+            // 80% Efficiency = Job takes 20% longer -> takes 120% of target time (1.20 * Base)
+            
+            const mins120 = Math.round(baseTotalMinutes * 0.80);
+            const mins100 = baseTotalMinutes;
+            const mins80 = Math.round(baseTotalMinutes * 1.20);
+
+            // Update Active Work Durations Display
+            document.getElementById('activeWork120').textContent = `Active Work: ${formatMinutes(mins120)}`;
+            document.getElementById('activeWork100').textContent = `Active Work: ${formatMinutes(mins100)}`;
+            document.getElementById('activeWork80').textContent = `Active Work: ${formatMinutes(mins80)}`;
+
+            // Calculate End Times
+            const res120 = computeEndTime(startDateTime, mins120, fridayMode);
+            const res100 = computeEndTime(startDateTime, mins100, fridayMode);
+            const res80 = computeEndTime(startDateTime, mins80, fridayMode);
+
+            // Render Output Cards
+            const dt120 = formatDateTime(res120.endTime);
+            document.getElementById('endTime120').textContent = dt120.timeStr;
+            document.getElementById('endDate120').textContent = dt120.dateStr;
+
+            const dt100 = formatDateTime(res100.endTime);
+            document.getElementById('endTime100').textContent = dt100.timeStr;
+            document.getElementById('endDate100').textContent = dt100.dateStr;
+
+            const dt80 = formatDateTime(res80.endTime);
+            document.getElementById('endTime80').textContent = dt80.timeStr;
+            document.getElementById('endDate80').textContent = dt80.dateStr;
+
+            // Render Timeline Breakdown (for 100% Target Pace)
+            renderTimeline(res100.timeline, baseTotalMinutes);
+        }
+
+        function renderTimeline(timeline, totalMins) {
+            const container = document.getElementById('timelineContainer');
+            document.getElementById('timelineTotalDuration').textContent = `Total Active: ${formatMinutes(totalMins)}`;
+            container.innerHTML = '';
+
+            timeline.forEach((item) => {
+                const el = document.createElement('div');
+                el.className = 'relative pl-7 py-1 text-sm';
+
+                if (item.type === 'work') {
+                    const startStr = item.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+                    const endStr = item.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+                    const dayStr = item.start.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+
+                    el.innerHTML = `
+                        <div class="absolute left-1.5 top-2.5 w-3 h-3 rounded-full bg-zbm-yellow border-2 border-neutral-900 shadow"></div>
+                        <div class="bg-zbm-input/80 border border-zbm-border/80 rounded-lg p-2.5 flex justify-between items-center">
+                            <div>
+                                <div class="font-bold text-white flex items-center gap-2">
+                                    <span>${startStr} – ${endStr}</span>
+                                    <span class="text-xs font-normal text-neutral-400">(${dayStr})</span>
+                                </div>
+                                <div class="text-xs text-zbm-yellow/90 font-medium">Active Manufacturing Work</div>
+                            </div>
+                            <div class="font-mono font-bold text-sm text-neutral-200 bg-neutral-800/80 px-2 py-1 rounded">
+                                +${formatMinutes(item.duration)}
+                            </div>
+                        </div>
+                    `;
+                } else if (item.type === 'break') {
+                    const startStr = item.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+                    const endStr = item.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+
+                    el.innerHTML = `
+                        <div class="absolute left-2 top-3 w-2 h-2 rounded-full bg-amber-500"></div>
+                        <div class="bg-amber-950/20 border border-amber-500/30 rounded-lg p-2 flex justify-between items-center text-xs">
+                            <div class="text-amber-300 font-medium flex items-center gap-2">
+                                <i class="ph-bold ph-coffee"></i>
+                                <span>${item.name} (${startStr} – ${endStr})</span>
+                            </div>
+                            <div class="text-amber-400 font-mono">${item.duration}m pause</div>
+                        </div>
+                    `;
+                } else if (item.type === 'offhours') {
+                    const dateStr = item.start.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+                    const timeStr = item.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+
+                    el.innerHTML = `
+                        <div class="absolute left-2 top-3 w-2 h-2 rounded-full bg-neutral-600"></div>
+                        <div class="bg-neutral-900/60 border border-neutral-800 rounded-lg p-2 text-xs text-neutral-400 flex justify-between items-center">
+                            <span class="italic">${item.label} @ ${timeStr} (${dateStr})</span>
+                            <span class="text-[10px] uppercase font-bold text-neutral-500">Resume 6:10 AM</span>
+                        </div>
+                    `;
+                }
+
+                container.appendChild(el);
+            });
+        }
+
+        // Attach Event Listeners
+        startTimeInput.addEventListener('input', calculateGoalTime);
+        durationHoursInput.addEventListener('input', calculateGoalTime);
+        durationMinsInput.addEventListener('input', calculateGoalTime);
+        fridayRadioButtons.forEach(radio => radio.addEventListener('change', calculateGoalTime));
+
+        // Initial setup
+        initDefaults();
+        calculateGoalTime();
+    </script>
+</body>
+</html>
