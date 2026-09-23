@@ -500,7 +500,7 @@
             // Linear Scale: Efficiency Pace = 100% + ((Target - Actual) / Target) * 100
             // 8 hrs on 10 hr target -> 100% + ((10 - 8)/10)*100% = 120%
             // 12 hrs on 10 hr target -> 100% + ((10 - 12)/10)*100% = 80%
-            const percentage = Math.round(100 + (((targetMinutes - actualMinutes) / targetMinutes) * 100));
+            const percentage = Math.round((((targetMinutes / actualMinutes)) * 100))
             efficiencyOutput.textContent = `${percentage}%`;
 
             if (percentage > 100) {
