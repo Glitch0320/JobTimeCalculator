@@ -170,7 +170,7 @@
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 
-                <!-- 120% EFFICIENCY (80% TIME) -->
+                <!-- 120% EFFICIENCY (80% TIME -> 8 HRS ON 10 HR JOB) -->
                 <div class="bg-zbm-card border-2 border-emerald-500/50 rounded-xl p-4 relative overflow-hidden shadow-lg flex flex-col justify-between">
                     <div class="absolute top-0 right-0 bg-emerald-500 text-neutral-950 font-black text-[10px] uppercase px-2.5 py-0.5 rounded-bl font-mono">
                         High Speed
@@ -212,7 +212,7 @@
                     </div>
                 </div>
 
-                <!-- 80% EFFICIENCY (120% TIME) -->
+                <!-- 80% EFFICIENCY (120% TIME -> 12 HRS ON 10 HR JOB) -->
                 <div class="bg-zbm-card border-2 border-amber-500/50 rounded-xl p-4 relative overflow-hidden shadow-lg flex flex-col justify-between">
                     <div class="absolute top-0 right-0 bg-amber-500 text-neutral-950 font-black text-[10px] uppercase px-2.5 py-0.5 rounded-bl font-mono">
                         Extended
@@ -236,7 +236,7 @@
             </div>
         </div>
 
-        <!-- NEW: ACTUAL VS TARGET JOB EFFICIENCY PERCENTAGE CALCULATOR -->
+        <!-- ACTUAL VS TARGET JOB EFFICIENCY PERCENTAGE CALCULATOR -->
         <div class="bg-zbm-card border border-zbm-border rounded-xl p-5 sm:p-6 shadow-xl mb-8">
             <h3 class="heading-font text-xl font-bold uppercase text-white mb-4 flex items-center gap-2 border-b border-zbm-border pb-3">
                 <i class="ph-bold ph-percent text-zbm-yellow"></i>
@@ -269,7 +269,7 @@
                 <div class="md:col-span-5 bg-neutral-900/90 border border-zbm-border rounded-xl p-4 text-center flex flex-col items-center justify-center">
                     <div class="text-xs uppercase font-bold text-neutral-400 tracking-wider mb-1">Achieved Efficiency</div>
                     <div class="heading-font text-4xl sm:text-5xl font-black text-zbm-yellow" id="efficiencyOutput">
-                        125%
+                        120%
                     </div>
                     <div id="efficiencyStatusBadge" class="mt-2 text-xs font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                         Ahead of Schedule
@@ -312,7 +312,6 @@
         const efficiencyStatusBadge = document.getElementById('efficiencyStatusBadge');
         const calcTargetLabel = document.getElementById('calcTargetLabel');
 
-        // Set default start time to today at current local time
         function initDefaults() {
             const now = new Date();
             const year = now.getFullYear();
@@ -498,9 +497,10 @@
                 return;
             }
 
-            // Efficiency Pace % = (Target Time / Actual Time) * 100
-            // Example: 10 hrs target / 8 hrs actual = 125% Efficiency Pace
-            const percentage = Math.round((targetMinutes / actualMinutes) * 100);
+            // Linear Scale: Efficiency Pace = 100% + ((Target - Actual) / Target) * 100
+            // 8 hrs on 10 hr target -> 100% + ((10 - 8)/10)*100% = 120%
+            // 12 hrs on 10 hr target -> 100% + ((10 - 12)/10)*100% = 80%
+            const percentage = Math.round(100 + (((targetMinutes - actualMinutes) / targetMinutes) * 100));
             efficiencyOutput.textContent = `${percentage}%`;
 
             if (percentage > 100) {
@@ -527,6 +527,8 @@
 
             if (baseTotalMinutes <= 0) return;
 
+            // 120% Pace = 80% time (e.g. 8 hrs on 10 hr job)
+            // 80% Pace = 120% time (e.g. 12 hrs on 10 hr job)
             const mins120 = Math.round(baseTotalMinutes * 0.80);
             const mins100 = baseTotalMinutes;
             const mins80 = Math.round(baseTotalMinutes * 1.20);
@@ -635,3 +637,4 @@
     </script>
 </body>
 </html>
+
