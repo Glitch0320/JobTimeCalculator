@@ -89,7 +89,7 @@
         <div class="bg-zbm-card border border-zbm-border rounded-xl shadow-2xl overflow-hidden mb-8">
             <div class="p-5 sm:p-7 space-y-6">
 
-                <!-- 1. START TIME INPUT (Fixed overflow layout) -->
+                <!-- 1. START TIME INPUT -->
                 <div>
                     <label class="block heading-font text-zbm-yellow text-sm font-bold tracking-wider uppercase mb-2 flex items-center gap-2">
                         <i class="ph-bold ph-calendar-plus text-lg"></i>
@@ -170,7 +170,7 @@
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 
-                <!-- 120% EFFICIENCY (20% FASTER -> 80% TIME) -->
+                <!-- 120% EFFICIENCY (80% TIME) -->
                 <div class="bg-zbm-card border-2 border-emerald-500/50 rounded-xl p-4 relative overflow-hidden shadow-lg flex flex-col justify-between">
                     <div class="absolute top-0 right-0 bg-emerald-500 text-neutral-950 font-black text-[10px] uppercase px-2.5 py-0.5 rounded-bl font-mono">
                         High Speed
@@ -212,7 +212,7 @@
                     </div>
                 </div>
 
-                <!-- 80% EFFICIENCY (20% SLOWER -> 120% TIME) -->
+                <!-- 80% EFFICIENCY (120% TIME) -->
                 <div class="bg-zbm-card border-2 border-amber-500/50 rounded-xl p-4 relative overflow-hidden shadow-lg flex flex-col justify-between">
                     <div class="absolute top-0 right-0 bg-amber-500 text-neutral-950 font-black text-[10px] uppercase px-2.5 py-0.5 rounded-bl font-mono">
                         Extended
@@ -230,6 +230,49 @@
                         <div class="text-xs uppercase tracking-wider text-neutral-400 font-medium">Goal End Time</div>
                         <div class="text-xl font-bold text-white leading-tight mt-0.5" id="endTime80">--:--</div>
                         <div class="text-xs text-amber-300 font-medium mt-0.5" id="endDate80">---</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- NEW: ACTUAL VS TARGET JOB EFFICIENCY PERCENTAGE CALCULATOR -->
+        <div class="bg-zbm-card border border-zbm-border rounded-xl p-5 sm:p-6 shadow-xl mb-8">
+            <h3 class="heading-font text-xl font-bold uppercase text-white mb-4 flex items-center gap-2 border-b border-zbm-border pb-3">
+                <i class="ph-bold ph-percent text-zbm-yellow"></i>
+                Job Efficiency Percentage Calculator
+            </h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                
+                <!-- INPUTS: ACTUAL TIME TAKEN -->
+                <div class="md:col-span-7 space-y-3">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-neutral-300">
+                        Actual Active Time Taken To Complete Job
+                    </label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="relative rounded-lg border border-zbm-border bg-zbm-input focus-within:border-zbm-yellow transition-colors flex items-center px-3">
+                            <input type="number" id="actualHours" min="0" value="8" class="w-full bg-transparent py-2.5 text-white font-bold text-xl outline-none">
+                            <span class="text-xs font-bold text-neutral-400 uppercase tracking-wider ml-1">HRS</span>
+                        </div>
+                        <div class="relative rounded-lg border border-zbm-border bg-zbm-input focus-within:border-zbm-yellow transition-colors flex items-center px-3">
+                            <input type="number" id="actualMins" min="0" max="59" value="0" class="w-full bg-transparent py-2.5 text-white font-bold text-xl outline-none">
+                            <span class="text-xs font-bold text-neutral-400 uppercase tracking-wider ml-1">MINS</span>
+                        </div>
+                    </div>
+                    <div class="text-xs text-neutral-400 italic">
+                        Calculated against current Target Duration (<span id="calcTargetLabel" class="text-white font-semibold">10h 0m</span>)
+                    </div>
+                </div>
+
+                <!-- RESULT: CALCULATED PERCENTAGE -->
+                <div class="md:col-span-5 bg-neutral-900/90 border border-zbm-border rounded-xl p-4 text-center flex flex-col items-center justify-center">
+                    <div class="text-xs uppercase font-bold text-neutral-400 tracking-wider mb-1">Achieved Efficiency</div>
+                    <div class="heading-font text-4xl sm:text-5xl font-black text-zbm-yellow" id="efficiencyOutput">
+                        125%
+                    </div>
+                    <div id="efficiencyStatusBadge" class="mt-2 text-xs font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                        Ahead of Schedule
                     </div>
                 </div>
 
@@ -262,10 +305,16 @@
         const fridayRadioButtons = document.getElementsByName('fridaySchedule');
         const btnNow = document.getElementById('btnNow');
 
-        // Set default start time to today at 14:00 (or current local time if preferred)
+        // Actual vs Target Efficiency Elements
+        const actualHoursInput = document.getElementById('actualHours');
+        const actualMinsInput = document.getElementById('actualMins');
+        const efficiencyOutput = document.getElementById('efficiencyOutput');
+        const efficiencyStatusBadge = document.getElementById('efficiencyStatusBadge');
+        const calcTargetLabel = document.getElementById('calcTargetLabel');
+
+        // Set default start time to today at current local time
         function initDefaults() {
             const now = new Date();
-            // Format for datetime-local input YYYY-MM-DDTHH:mm
             const year = now.getFullYear();
             const month = String(now.getMonth() + 1).padStart(2, '0');
             const day = String(now.getDate()).padStart(2, '0');
@@ -287,39 +336,33 @@
             return '3pm';
         }
 
-        // Check if date is a working minute and return shift details
         function getShiftForDate(date, fridayMode) {
             const day = date.getDay(); // 0 = Sun, 1 = Mon, ..., 5 = Fri, 6 = Sat
             
-            // Weekends
             if (day === 0 || day === 6) return null;
 
-            // Monday - Thursday
             if (day >= 1 && day <= 4) {
                 return {
-                    startMin: 6 * 60 + 10,  // 06:10 (370 mins)
-                    endMin: 16 * 60 + 20,   // 16:20 (980 mins)
+                    startMin: 6 * 60 + 10,  // 06:10
+                    endMin: 16 * 60 + 20,   // 16:20
                     breaks: [
-                        { start: 9 * 60, end: 9 * 60 + 15, name: 'Morning Break' },       // 09:00 - 09:15
-                        { start: 12 * 60, end: 12 * 60 + 30, name: 'Lunch Break' },       // 12:00 - 12:30
-                        { start: 15 * 60, end: 15 * 60 + 15, name: 'Afternoon Break' }    // 15:00 - 15:15
+                        { start: 9 * 60, end: 9 * 60 + 15, name: 'Morning Break' },
+                        { start: 12 * 60, end: 12 * 60 + 30, name: 'Lunch Break' },
+                        { start: 15 * 60, end: 15 * 60 + 15, name: 'Afternoon Break' }
                     ]
                 };
             }
 
-            // Friday
             if (day === 5) {
                 if (fridayMode === 'off') return null;
 
-                let endMin = 15 * 60; // Default 3:00 PM (900 mins)
-                if (fridayMode === '12pm') endMin = 12 * 60; // 12:00 PM (720 mins)
+                let endMin = 15 * 60; // 3:00 PM
+                if (fridayMode === '12pm') endMin = 12 * 60; // 12:00 PM
 
                 const breaks = [];
-                // Morning break always occurs if shift goes past 9:15 AM
                 if (endMin > 9 * 60 + 15) {
                     breaks.push({ start: 9 * 60, end: 9 * 60 + 15, name: 'Morning Break' });
                 }
-                // Lunch break occurs if shift goes past 12:30 PM
                 if (endMin > 12 * 60 + 30) {
                     breaks.push({ start: 12 * 60, end: 12 * 60 + 30, name: 'Lunch Break' });
                 }
@@ -334,7 +377,6 @@
             return null;
         }
 
-        // Core Minute-by-Minute Calculation Engine
         function computeEndTime(startDateTime, totalMinutesRequired, fridayMode) {
             let current = new Date(startDateTime.getTime());
             let remainingMins = totalMinutesRequired;
@@ -343,7 +385,6 @@
             let activeBlockMinutes = 0;
             let currentBlockStart = new Date(current.getTime());
 
-            // Limit simulation iterations to prevent infinite loops (e.g. max 60 working days)
             let maxSafetyGuard = 60 * 24 * 60; 
 
             while (remainingMins > 0 && maxSafetyGuard > 0) {
@@ -353,7 +394,6 @@
                 const timeInMins = current.getHours() * 60 + current.getMinutes();
 
                 if (!shift || timeInMins >= shift.endMin) {
-                    // Non-working day or past shift end -> fast forward to next day 06:10 AM
                     if (activeBlockMinutes > 0) {
                         timelineEvents.push({
                             type: 'work',
@@ -370,7 +410,6 @@
                         label: timeInMins >= (shift?.endMin || 0) ? 'Shift End / Overnight Pause' : 'Non-Working Day'
                     });
 
-                    // Advance to next day at 06:10 AM
                     current.setDate(current.getDate() + 1);
                     current.setHours(6, 10, 0, 0);
                     currentBlockStart = new Date(current.getTime());
@@ -378,13 +417,11 @@
                 }
 
                 if (timeInMins < shift.startMin) {
-                    // Before shift start -> skip forward to shift start
                     current.setHours(6, 10, 0, 0);
                     currentBlockStart = new Date(current.getTime());
                     continue;
                 }
 
-                // Check if currently inside a break
                 const currentBreak = shift.breaks.find(b => timeInMins >= b.start && timeInMins < b.end);
 
                 if (currentBreak) {
@@ -398,7 +435,6 @@
                         activeBlockMinutes = 0;
                     }
 
-                    // Jump to end of break
                     const breakEndHour = Math.floor(currentBreak.end / 60);
                     const breakEndMin = currentBreak.end % 60;
                     const breakStart = new Date(current.getTime());
@@ -416,7 +452,6 @@
                     continue;
                 }
 
-                // Normal active working minute
                 remainingMins--;
                 activeBlockMinutes++;
                 current.setMinutes(current.getMinutes() + 1);
@@ -449,6 +484,37 @@
             return `${h}h ${m}m`;
         }
 
+        function updateEfficiencyCalculation(targetMinutes) {
+            const actualH = parseFloat(actualHoursInput.value) || 0;
+            const actualM = parseFloat(actualMinsInput.value) || 0;
+            const actualMinutes = (actualH * 60) + actualM;
+
+            calcTargetLabel.textContent = formatMinutes(targetMinutes);
+
+            if (actualMinutes <= 0 || targetMinutes <= 0) {
+                efficiencyOutput.textContent = '--%';
+                efficiencyStatusBadge.textContent = 'Invalid Input';
+                efficiencyStatusBadge.className = 'mt-2 text-xs font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider bg-neutral-800 text-neutral-400 border border-neutral-700';
+                return;
+            }
+
+            // Efficiency Pace % = (Target Time / Actual Time) * 100
+            // Example: 10 hrs target / 8 hrs actual = 125% Efficiency Pace
+            const percentage = Math.round((targetMinutes / actualMinutes) * 100);
+            efficiencyOutput.textContent = `${percentage}%`;
+
+            if (percentage > 100) {
+                efficiencyStatusBadge.textContent = 'Ahead of Schedule';
+                efficiencyStatusBadge.className = 'mt-2 text-xs font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+            } else if (percentage === 100) {
+                efficiencyStatusBadge.textContent = 'Exactly On Target';
+                efficiencyStatusBadge.className = 'mt-2 text-xs font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider bg-zbm-yellow/20 text-zbm-yellow border border-zbm-yellow/30';
+            } else {
+                efficiencyStatusBadge.textContent = 'Behind Schedule';
+                efficiencyStatusBadge.className = 'mt-2 text-xs font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider bg-amber-500/20 text-amber-400 border border-amber-500/30';
+            }
+        }
+
         function calculateGoalTime() {
             if (!startTimeInput.value) return;
 
@@ -459,15 +525,8 @@
 
             const baseTotalMinutes = Math.round(hours * 60 + mins);
 
-            if (baseTotalMinutes <= 0) {
-                return;
-            }
+            if (baseTotalMinutes <= 0) return;
 
-            // Exact calculation definitions:
-            // 120% Efficiency = Job finishes 20% faster -> takes 80% of target time (0.80 * Base)
-            // 100% Target = Standard time (1.00 * Base)
-            // 80% Efficiency = Job takes 20% longer -> takes 120% of target time (1.20 * Base)
-            
             const mins120 = Math.round(baseTotalMinutes * 0.80);
             const mins100 = baseTotalMinutes;
             const mins80 = Math.round(baseTotalMinutes * 1.20);
@@ -495,7 +554,10 @@
             document.getElementById('endTime80').textContent = dt80.timeStr;
             document.getElementById('endDate80').textContent = dt80.dateStr;
 
-            // Render Timeline Breakdown (for 100% Target Pace)
+            // Update Percentage Calculator
+            updateEfficiencyCalculation(baseTotalMinutes);
+
+            // Render Timeline Breakdown
             renderTimeline(res100.timeline, baseTotalMinutes);
         }
 
@@ -563,6 +625,8 @@
         startTimeInput.addEventListener('input', calculateGoalTime);
         durationHoursInput.addEventListener('input', calculateGoalTime);
         durationMinsInput.addEventListener('input', calculateGoalTime);
+        actualHoursInput.addEventListener('input', calculateGoalTime);
+        actualMinsInput.addEventListener('input', calculateGoalTime);
         fridayRadioButtons.forEach(radio => radio.addEventListener('change', calculateGoalTime));
 
         // Initial setup
